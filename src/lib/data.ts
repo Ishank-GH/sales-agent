@@ -1,5 +1,5 @@
 import { Sparkle, Webcam, House, Settings, Target } from 'lucide-react'
-import { CallStatusEnum } from '../../src/generated/prisma'
+import { CallStatusEnum } from '@/generated/prisma'
 
 export const sidebarData = [
   {

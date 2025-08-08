@@ -7,7 +7,7 @@ import Image from "next/image";
 import { potentialCustomer } from "@/lib/data";
 import UserInfoCard from "./_components/UserInfoCard";
 
-type Props = {};
+type Props = {};       
 
 const Pages = (props: Props) => {
   return (

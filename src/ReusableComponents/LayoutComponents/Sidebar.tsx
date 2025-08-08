@@ -5,6 +5,7 @@ import React from "react";
 import { sidebarData } from "@/lib/data";
 import {
   Tooltip,
+  TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
@@ -26,7 +27,7 @@ const Sidebar = (props: Props) => {
           {sidebarData.map((item) => (
             <TooltipProvider key={item.id}>
               <Tooltip>
-                <TooltipTrigger asChild="true">
+                <TooltipTrigger asChild>
                   <Link
                     href={item.link}
                     className={`flex items-center gap-2 cursor-pointer rounded-lg p-2 ${
@@ -40,6 +41,9 @@ const Sidebar = (props: Props) => {
                     />
                   </Link>
                 </TooltipTrigger>
+                <TooltipContent side='right'>
+                  <span className="text-sm">{item.title}</span>
+                </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           ))}
