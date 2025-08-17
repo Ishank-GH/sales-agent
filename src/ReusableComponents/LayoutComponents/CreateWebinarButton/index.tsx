@@ -1,33 +1,56 @@
-'use client'
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+"use client";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useWebinarStore } from "@/store/useWebinarStore";
 import { Plus } from "lucide-react";
 import React, { useState } from "react";
 import MultiStepForm from "./MultiStepForm";
 import BasicInfoStep from "./BasicInfoStep";
+import CTAStep from "./CTAStep";
+import AdditionalInfoStep from "./AdditionalInfoStep";
 
 type Props = {};
 
 const CreateWebinarButton = (props: Props) => {
-  const { isModalOpen, setModalOpen, isComplete, setComplete } = useWebinarStore();
+  const { isModalOpen, setModalOpen, isComplete, setComplete } =
+    useWebinarStore();
 
-  const [webinarLink, setwebinarLink] = useState('')
+  const [webinarLink, setwebinarLink] = useState("");
 
-const steps = [
-  {
-    id:'basicInfo',
-    title: 'Basic Information',
-    description: 'Please fill out the standard info needed for the webinar',
-    component: <BasicInfoStep />
-  }
-]
+  const steps = [
+    {
+      id: "basicInfo",
+      title: "Basic Information",
+      description: "Please fill out the standard info needed for the webinar",
+      component: <BasicInfoStep />,
+    },
+    {
+      id: "cta",
+      title: "CTA",
+      description:
+        "Please provide the end-point for your customers through your webinar",
+      component: (
+        <CTAStep assistants={[]} stripeProducts={[]} />
+      ),
+    },
+    {
+      id: 'additionalInfo',
+title: 'Additional information',
+description:'Please fill out information about additional options if necessary',
+component: <AdditionalInfoStep />,
+    },
+  ];
 
-const handleComplete = (webinarId: string) => {
-setComplete(true)
-setwebinarLink(
-  `${process.env.NEXT_PUBLIC_BASE_URL}/live-webinar/${webinarId}`
-)
-}
+  const handleComplete = (webinarId: string) => {
+    setComplete(true);
+    setwebinarLink(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/live-webinar/${webinarId}`
+    );
+  };
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
@@ -42,16 +65,15 @@ setwebinarLink(
       </DialogTrigger>
       <DialogContent className="sm:max-w-[900px] p-0 bg-transparent border-none">
         {isComplete ? (
-            <div className="bg-muted text-primary rounded-lg overflow-hidden">
-                <DialogTitle className="sr-only">Webinar Created</DialogTitle>
-                {/* SuccessStep */}
-            </div>
+          <div className="bg-muted text-primary rounded-lg overflow-hidden">
+            <DialogTitle className="sr-only">Webinar Created</DialogTitle>
+            {/* SuccessStep */}
+          </div>
         ) : (
-            <>
-             <DialogTitle className="sr-only">Webinar Created</DialogTitle>
-             <MultiStepForm steps={steps} 
-             onComplete={handleComplete}/>
-            </>
+          <>
+            <DialogTitle className="sr-only">Webinar Created</DialogTitle>
+            <MultiStepForm steps={steps} onComplete={handleComplete} />
+          </>
         )}
       </DialogContent>
     </Dialog>

@@ -74,6 +74,8 @@ type WebinarStore = {
 
   validateStep: (stepId: keyof WebinarFormState) => boolean;
 
+  addTag: (tag: string) => void;
+  removeTag: (tag: string) => void;
   getStepValidationErrors: (stepId: keyof WebinarFormState) => ValidationErrors;
 
   resetForm: () => void;
@@ -172,6 +174,9 @@ export const useWebinarStore = create<WebinarStore>((set, get) => ({
       case "additionalInfo":
         validationResult = validateAdditionalInfo(formData.additionalInfo);
         break;
+      default:
+        validationResult = { valid: false, errors: {} };
+        break;
     }
 
     set((state) => {
@@ -183,7 +188,7 @@ export const useWebinarStore = create<WebinarStore>((set, get) => ({
   },
 
   getStepValidationErrors: (stepId: keyof WebinarFormState) => {
-    return get().validation[stepId].errors
+    return get().validation[stepId].errors;
   },
 
   resetForm: () =>
@@ -193,4 +198,37 @@ export const useWebinarStore = create<WebinarStore>((set, get) => ({
       formData: initialState,
       validation: initialValidation,
     }),
+
+  addTag: (tag: string) => {
+    set((state) => {
+      const newTags = [...(state.formData.cta.tags || []), tag];
+      const newCTA = {
+        ...state.formData.cta,
+        tags: newTags,
+      };
+      return {
+        formData: {
+          ...state.formData,
+          cta: newCTA,
+        },
+      };
+    });
+  },
+  removeTag: (tagToRemove: string) => {
+    set((state) => {
+      const newTags = [
+        ...(state.formData.cta.tags || []).filter((tag) => tag !== tagToRemove),
+      ];
+      const newCTA = {
+        ...state.formData.cta,
+        tags: newTags,
+      };
+      return {
+        formData: {
+          ...state.formData,
+          cta: newCTA,
+        },
+      };
+    });
+  },
 }));
