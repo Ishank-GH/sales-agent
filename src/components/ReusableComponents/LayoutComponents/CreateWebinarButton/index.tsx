@@ -12,11 +12,12 @@ import MultiStepForm from "./MultiStepForm";
 import BasicInfoStep from "./BasicInfoStep";
 import CTAStep from "./CTAStep";
 import AdditionalInfoStep from "./AdditionalInfoStep";
+import SuccessStep from "./SuccessStep";
 
 type Props = {};
 
 const CreateWebinarButton = (props: Props) => {
-  const { isModalOpen, setModalOpen, isComplete, setComplete } =
+  const { isModalOpen, setModalOpen, isComplete, setComplete, resetForm } =
     useWebinarStore();
 
   const [webinarLink, setwebinarLink] = useState("");
@@ -52,6 +53,10 @@ component: <AdditionalInfoStep />,
     );
   };
 
+  const handleCreateNew = () => {
+    resetForm()
+  }
+
   return (
     <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
       <DialogTrigger asChild>
@@ -67,7 +72,10 @@ component: <AdditionalInfoStep />,
         {isComplete ? (
           <div className="bg-muted text-primary rounded-lg overflow-hidden">
             <DialogTitle className="sr-only">Webinar Created</DialogTitle>
-            {/* SuccessStep */}
+            <SuccessStep 
+            webinarLink={webinarLink}
+            onCreateNew={handleCreateNew}
+            />
           </div>
         ) : (
           <>

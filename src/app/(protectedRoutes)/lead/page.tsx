@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import PageHeader from "@/ReusableComponents/LayoutComponents/PageHeader";
+import PageHeader from "@/components/ReusableComponents/LayoutComponents/PageHeader";
 import { Menu, Target, Webcam } from "lucide-react";
 import React from "react";
 

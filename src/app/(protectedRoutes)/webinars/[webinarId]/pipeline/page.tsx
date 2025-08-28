@@ -1,5 +1,5 @@
 import { getWebinarAttendance } from "@/actions/attendance";
-import PageHeader from "@/ReusableComponents/LayoutComponents/PageHeader/index";
+import PageHeader from "@/components/ReusableComponents/LayoutComponents/PageHeader/index";
 import { Home, Menu, Target } from "lucide-react";
 import React from "react";
 import PipelineLayout from "./_components/PipelineLayout";

@@ -1,22 +1,28 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PageHeader from "@/ReusableComponents/LayoutComponents/PageHeader";
+import PageHeader from "@/components/ReusableComponents/LayoutComponents/PageHeader";
 import { HomeIcon, Target, Webcam } from "lucide-react";
 import { onAuthenticateUser } from "@/actions/auth";
 import { redirect } from "next/navigation";
 import { getWebinarByPresenterId } from "@/actions/webinar";
 import WebinarCard from "./_components/WebinarCard";
-import { Webinar } from "@/generated/prisma";
+import { Webinar, WebinarStatusEnum } from "@/generated/prisma";
+import Link from "next/link";
 
-type Props = {};
+type Props = {
+  searchParams:Promise<{
+    webinarStatus: string
+  }>
+};
 
-const page = async (props: Props) => {
+const page = async ({searchParams}: Props) => {
+  const {webinarStatus} = await searchParams
   const checkUser = await onAuthenticateUser();
   if (!checkUser.user) {
     redirect("/");
   }
 
-  const webinars = await getWebinarByPresenterId(checkUser?.user?.id);
+  const webinars = await getWebinarByPresenterId(checkUser?.user?.id, webinarStatus as WebinarStatusEnum);
   return (
     <Tabs defaultValue="all" className="w-full flex flex-col gap-8">
       <PageHeader
@@ -31,13 +37,13 @@ const page = async (props: Props) => {
             value="all"
             className="bg-secondary opacity-50 data-[state=active]:opacity-100 px-8 py-4"
           >
-            All
+            <Link href="/webinars?webinarStatus=all">All</Link>
           </TabsTrigger>
           <TabsTrigger value="upcoming" className="bg-secondary px-8 py-4">
-            Upcoming
+            <Link href="/webinars?webinarStatus=upcoming">Upcoming</Link>
           </TabsTrigger>
           <TabsTrigger value="ended" className="bg-secondary px-8 py-4">
-            Ended
+            <Link href="/webinars?webinarStatus=ended">Ended</Link>
           </TabsTrigger>
         </TabsList>
       </PageHeader>
@@ -55,7 +61,39 @@ const page = async (props: Props) => {
             />
           ))
         ) : (
-          <div className="w-full h-[200px] flex justify-center items-center text-primary font-semibold text-2x col-span-12">
+          <div className="w-full h-[200px] flex justify-center items-center text-primary font-semibold text-2xl col-span-12">
+            No Webinar found
+          </div>
+        )}
+      </TabsContent>
+      <TabsContent
+        value="upcoming"
+      >
+        {webinars?.length > 0 ? (
+          webinars.map((webinar: Webinar, index: number)=>(
+            <WebinarCard
+            key={index}
+            webinar={webinar}
+            />
+          ))
+        ) : (
+          <div className="w-full h-[200px] flex justify-center items-center text-primary font-semibold text-2xl col-span-12">
+            No Webinar found
+          </div>
+        )}
+      </TabsContent>
+      <TabsContent
+        value="ended"
+      >
+        {webinars?.length > 0 ? (
+          webinars.map((webinar: Webinar, index: number)=>(
+            <WebinarCard
+            key={index}
+            webinar={webinar}
+            />
+          ))
+        ) : (
+          <div className="w-full h-[200px] flex justify-center items-center text-primary font-semibold text-2xl col-span-12">
             No Webinar found
           </div>
         )}

@@ -1,6 +1,6 @@
 import { onAuthenticateUser } from "@/actions/auth";
-import Header from "@/ReusableComponents/LayoutComponents/Header";
-import Sidebar from "@/ReusableComponents/LayoutComponents/Sidebar";
+import Header from "@/components/ReusableComponents/LayoutComponents/Header";
+import Sidebar from "@/components/ReusableComponents/LayoutComponents/Sidebar";
 import { redirect } from "next/navigation";
 import React from "react"; //layout files/pages doesnt refresh everytime, it just caches the data.
 

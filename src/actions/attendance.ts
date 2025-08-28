@@ -1,6 +1,10 @@
 "use server";
 
-import { AttendedTypeEnum, CtaTypeEnum } from "@/generated/prisma";
+import {
+  AttendedTypeEnum,
+  CtaTypeEnum,
+  PrismaClient,
+} from "@/generated/prisma";
 import { prismaClient } from "@/lib/prismaClient";
 import { AttendanceData } from "@/lib/type";
 import { revalidatePath } from "next/cache";
@@ -19,6 +23,7 @@ export const getWebinarAttendance = async (
         id: true,
         ctaType: true,
         tags: true,
+        presenter: true,
         _count: {
           select: {
             attendances: true,
@@ -121,19 +126,138 @@ export const getWebinarAttendance = async (
         }
       }
     }
-      // revalidatePath(`/webinars/${webinarId}/pipelines`);
+    return {
+      success: true,
+      data: result,
+      ctaType: webinar.ctaType,
+      webinarTags: webinar.tags || [],
+      presenter: webinar.presenter,
+    };
+  } catch (error) {
+    console.error("Failed to fetch attendance data:", error);
+    return {
+      success: false,
+      error: "Failed to fetch attendance data",
+    };
+  }
+};
+
+export const registerAttendee = async ({
+  webinarId,
+  email,
+  name,
+}: {
+  webinarId: string;
+  email: string;
+  name: string;
+}) => {
+  try {
+    if (!webinarId || !email) {
+      return {
+        success: false,
+        status: 400,
+        message: "Missing required parameters",
+      };
+    }
+    const webinar = await prismaClient.webinar.findUnique({
+      where: { id: webinarId },
+    });
+    if (!webinar) {
+      return { success: false, status: 404, message: "Webinar not found" };
+    }
+
+    // Find or create the attendee by email
+    let attendee = await prismaClient.attendee.findUnique({
+      where: { email },
+    });
+
+    if (!attendee) {
+      attendee = await prismaClient.attendee.create({
+        data: { email, name },
+      });
+    }
+
+    // Check for existing ottendance
+    const existingAttendance = await prismaClient.attendance.findFirst({
+      where: {
+        attendeeId: attendee.id,
+        webinarId: webinarId,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (existingAttendance) {
       return {
         success: true,
-        data: result,
-        ctaType: webinar.ctaType,
-        webinarTags: webinar.tags || [],
+        status: 200,
+        data: existingAttendance,
+        message: "You are already registered for this webinar",
       };
-    
-  } catch (error) {
-    console.error('Failed to fetch attendance data:', error)
-    return{
-        success: false,
-        error: 'Failed to fetch attendance data'
     }
+
+    // Create attendance record
+    const attendance = await prismaClient.attendance.create({
+      data: {
+        attendedType: AttendedTypeEnum.REGISTERED,
+        attendeeId: attendee.id,
+        webinarId: webinarId,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    revalidatePath(`/${webinarId}`);
+
+    return {
+      success: true,
+      status: 200,
+      data: attendance,
+      message: "Successfully Registered",
+    };
+  } catch (error) {
+    console.error("Registration error", error);
+    return {
+      success: false,
+      status: 500,
+      error: error,
+      message: "Something went wrong",
+    };
+  }
+};
+
+export const changeAttendanceType = async (
+  attendeeId: string,
+  webinarId: string,
+  attendedType: AttendedTypeEnum
+) => {
+  try {
+    const attendance = await prismaClient.attendance.update({
+      where: {
+        attendeeId_webinarId: {
+          attendeeId,
+          webinarId,
+        },
+      },
+      data: {
+        attendedType,
+      },
+    });
+    return {
+      sucess: true,
+      status: 200,
+      message: "Attendance type updated successfully",
+      data: attendance,
+    };
+  } catch (error) {
+    console.error("Error updating attendance type: ", error);
+    return {
+      success: false,
+      status: 500,
+      message: "Failed to update attendance type",
+      error,
+    };
   }
 };
