@@ -7,10 +7,14 @@ import { ArrowLeft, Zap } from "lucide-react";
 import React from "react";
 import PurpleIcon from "./PurpleIcon";
 import CreateWebinarButton from "./CreateWebinarButton";
+import { Assistant } from "@vapi-ai/server-sdk/api";
 
-type Props = { user: User };
+type Props = { user: User
+  assistants: Assistant[] | []
+ };
 
-const Header = ({ user }: Props) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const Header = ({ user, assistants }: Props) => {
   const pathname = usePathname();
   const router = useRouter();
   return (
@@ -33,7 +37,7 @@ const Header = ({ user }: Props) => {
           <Zap />
         </PurpleIcon>
 
-        <CreateWebinarButton />
+        <CreateWebinarButton assistants={assistants}/>
       </div>
     </div>
   );

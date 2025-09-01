@@ -9,19 +9,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
-type Props = {};
-
-const page = async (props: Props) => {
+const page = async () => {
   const userExist = await onAuthenticateUser();
   if (!userExist.user) {
     redirect("/sign-in");
   }
   const isConnected = !!userExist?.user?.stripeConnectId;
 
-  const stripeLink = getStripeOAuthLink(
-    "api/stripe-connect",
-    userExist.user.id
-  )
+  // const stripeLink = getStripeOAuthLink(
+  //   "api/stripe-connect",
+  //   userExist.user.id
+  // )
 
   return (
     <div className="w-full mx-auto py-8 px-4">
@@ -71,7 +69,7 @@ const page = async (props: Props) => {
           </div>
           {/* TODO: Add the stripe Link */}
           <Link
-            href={stripeLink}
+            href={''}
             className={`px-5 py-2.5 rounded-md font-medium text-sm flex items-center gap-2 transition-colors ${
               isConnected
                 ? "bg-muted hover:bg-muted/80 text-foreground"

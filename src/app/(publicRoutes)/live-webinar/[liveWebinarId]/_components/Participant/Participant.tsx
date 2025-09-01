@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { WebinarWithPresenter } from "@/lib/type";
 import { useAttendeeStore } from "@/store/useAttendeeStore";
 import {
+  Call,
   StreamCall,
   StreamVideo,
   StreamVideoClient,
@@ -22,7 +23,7 @@ const Participant = ({ apiKey, callId, webinar }: Props) => {
   const { attendee } = useAttendeeStore();
   const [showChat, setShowChat] = useState<boolean>(true);
   const [client, setClient] = useState<StreamVideoClient | null>(null);
-  const [call, setCall] = useState<Call>(null);
+  const [call, setCall] = useState<Call | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<
@@ -97,7 +98,7 @@ const Participant = ({ apiKey, callId, webinar }: Props) => {
           });
       }
     };
-  }, [apiKey, callId, attendee, call, client]);
+  }, [apiKey, callId, attendee, call, client, webinar.id]);
 
   if (!attendee) {
     return (
@@ -206,6 +207,7 @@ const Participant = ({ apiKey, callId, webinar }: Props) => {
           username={attendee?.name}
           userId={attendee?.id}
           userToken={token}
+          call={call}
         />
       </StreamCall>
     </StreamVideo>

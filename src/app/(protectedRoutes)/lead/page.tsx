@@ -11,9 +11,22 @@ import PageHeader from "@/components/ReusableComponents/LayoutComponents/PageHea
 import { Menu, Target, Webcam } from "lucide-react";
 import React from "react";
 
-type Props = {};
+const leadData = [
+  {
+    name: "John Doe",
+    email: "john@example.com",
+    phone: "123-456-7890",
+    tags: ["VIP", "New"],
+  },
+  {
+    name: "Jane Smith",
+    email: "jane@example.com",
+    phone: "987-654-3210",
+    tags: ["Returning"],
+  },
+];
 
-const page = (props: Props) => {
+const page = () => {
   return (
     <div className="w-full flex flex-col gap-8">
       <PageHeader
@@ -22,6 +35,7 @@ const page = (props: Props) => {
         rightIcon={<Menu className="w-3 h-3" />}
         heading="The Home to all of your customers"
         placeholder="Search Customers..."
+        
       />
       <Table>
         <TableHeader>

@@ -13,10 +13,13 @@ import BasicInfoStep from "./BasicInfoStep";
 import CTAStep from "./CTAStep";
 import AdditionalInfoStep from "./AdditionalInfoStep";
 import SuccessStep from "./SuccessStep";
+import { Assistant } from "@vapi-ai/server-sdk/api";
 
-type Props = {};
+type Props = {
+  assistants: Assistant[] | [];
+};
 
-const CreateWebinarButton = (props: Props) => {
+const CreateWebinarButton = ({ assistants }: Props) => {
   const { isModalOpen, setModalOpen, isComplete, setComplete, resetForm } =
     useWebinarStore();
 
@@ -34,15 +37,16 @@ const CreateWebinarButton = (props: Props) => {
       title: "CTA",
       description:
         "Please provide the end-point for your customers through your webinar",
-      component: (
-        <CTAStep assistants={[]} stripeProducts={[]} />
-      ),
+      component: <CTAStep assistants={assistants}
+       // stripeProducts={[]} 
+      />, 
     },
     {
-      id: 'additionalInfo',
-title: 'Additional information',
-description:'Please fill out information about additional options if necessary',
-component: <AdditionalInfoStep />,
+      id: "additionalInfo",
+      title: "Additional information",
+      description:
+        "Please fill out information about additional options if necessary",
+      component: <AdditionalInfoStep />,
     },
   ];
 
@@ -54,8 +58,8 @@ component: <AdditionalInfoStep />,
   };
 
   const handleCreateNew = () => {
-    resetForm()
-  }
+    resetForm();
+  };
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
@@ -72,9 +76,9 @@ component: <AdditionalInfoStep />,
         {isComplete ? (
           <div className="bg-muted text-primary rounded-lg overflow-hidden">
             <DialogTitle className="sr-only">Webinar Created</DialogTitle>
-            <SuccessStep 
-            webinarLink={webinarLink}
-            onCreateNew={handleCreateNew}
+            <SuccessStep
+              webinarLink={webinarLink}
+              onCreateNew={handleCreateNew}
             />
           </div>
         ) : (

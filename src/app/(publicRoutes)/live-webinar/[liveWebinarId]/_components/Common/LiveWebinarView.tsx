@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Button } from "@/components/ui/button";
 import { CtaTypeEnum } from "@/generated/prisma";
 import { WebinarWithPresenter } from "@/lib/type";
-import 'stream-chat-react/dist/css/v2/index.css'
-import { ParticipantView, useCallStateHooks, type Call } from "@stream-io/video-react-sdk";
+import "stream-chat-react/dist/css/v2/index.css";
+import {
+  ParticipantView,
+  useCallStateHooks,
+  type Call,
+} from "@stream-io/video-react-sdk";
 import { Loader2, MessageSquare, Users } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { StreamChat } from "stream-chat";
@@ -21,7 +26,7 @@ type Props = {
   isHost?: boolean;
   username: string;
   userId: string;
-  call: Call,
+  call: Call;
   userToken: string;
 };
 
@@ -33,7 +38,7 @@ const LiveWebinarView = ({
   username,
   userId,
   userToken,
-  call
+  call,
 }: Props) => {
   const { useParticipantCount, useParticipants } = useCallStateHooks();
   const participants = useParticipants();
@@ -43,10 +48,10 @@ const LiveWebinarView = ({
   const viewerCount = useParticipantCount();
   const hostParticipant = participants.length > 0 ? participants[0] : null;
 
-  const [obsDialogBox, setObsDialogBox] = useState(false)
+  const [obsDialogBox, setObsDialogBox] = useState(false);
 
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleCTAButtonClick = async () => {
     if (!channel) return;
@@ -56,27 +61,26 @@ const LiveWebinarView = ({
     });
   };
 
-  const handleEndStream = async()=>{
-    setLoading(true)
-    try{
+  const handleEndStream = async () => {
+    setLoading(true);
+    try {
       call.stopLive({
         continue_recording: false,
-      })
-      call.endCall()
-      const res = await changeWebinarStatus(webinar.id, "ENDED")
-      if(!res.success){
-        throw new Error(res.message)
+      });
+      call.endCall();
+      const res = await changeWebinarStatus(webinar.id, "ENDED");
+      if (!res.success) {
+        throw new Error(res.message);
       }
-      toast.success("Webinar ended successfully")
-      router.push('/')
-    }catch(error){
-      console.error('Error ending the stream', error);
-      toast.error("Error ending the stream")
-      
-    }finally{
-      setLoading(false)
+      toast.success("Webinar ended successfully");
+      router.push("/");
+    } catch (error) {
+      console.error("Error ending the stream", error);
+      toast.error("Error ending the stream");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     const initChat = async () => {
@@ -92,7 +96,7 @@ const LiveWebinarView = ({
         userToken
       );
       const channel = client.channel("livestream", webinar.id, {
-        name: webinar.title,
+        // name: webinar.title,
       });
       await channel.watch();
 
@@ -106,7 +110,7 @@ const LiveWebinarView = ({
         chatClient.disconnectUser();
       }
     };
-  }, [userId, username, userToken, webinar.id, webinar.title]);
+  }, [userId, username, userToken, webinar.id, webinar.title, chatClient]);
 
   useEffect(() => {
     if (chatClient && channel) {
@@ -114,21 +118,12 @@ const LiveWebinarView = ({
         if (event.type === "open_cta_dialog" && !isHost) {
           setDialogOpen(true);
         }
-        // console. log("New message:", even!);s
+        if (event.type === "start_live") {
+          window.location.reload();
+        }
       });
     }
   }, [chatClient, channel, isHost]);
-
-  useEffect(()=>{
-call.on("call.rtmp_broadcast_started", ()=>{
-  toast.success('Webinar started successfully')
-  router.refresh()
-})
-  call.on("call.rtmp_broadcast_failed", ()=>{
-  toast.success('Stream failed to start. Please try again.') 
-})
-  }, [call])
-
 
   //Start recording feature
 
@@ -200,16 +195,29 @@ call.on("call.rtmp_broadcast_started", ()=>{
 
             {isHost && (
               <div className="flex items-center space-x-1">
-                <Button onClick={()=>setOBSDialogOpen(true)}
+                <Button
+                  onClick={() => setObsDialogBox(true)}
                   variant="outline"
-                  className="mr-2">
+                  className="mr-2"
+                >
                   Get OBS Creds
+                </Button>
+                <Button
+                  onClick={async () => {
+                    await channel.sendEvent({
+                      type: "start_live",
+                    });
+                  }}
+                  variant="outline"
+                  className="mr-2"
+                >
+                  Go Live
                 </Button>
                 <Button onClick={handleEndStream} disabled={loading}>
                   {loading ? (
                     <>
-                    <Loader2 className="animate-spin mr-2" />
-                    Loading...  
+                      <Loader2 className="animate-spin mr-2" />
+                      Loading...
                     </>
                   ) : (
                     "End Stream"
@@ -245,23 +253,22 @@ call.on("call.rtmp_broadcast_started", ()=>{
           </Chat>
         )}
       </div>
-      
 
       {/* TODO: addd a cta dialog box */}
       {dialogOpen && (
         <CTADialogBox
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        webinar={webinar}
-        userId={userId}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          webinar={webinar}
+          userId={userId}
         />
       )}
       {obsDialogBox && (
         <ObsDialogBox
-        open={obsDialogBox}
-        onOpenChange={setObsDialogBox}
-        rtmpURL={`rtmp://ingress.stream-io-video.com:443/${process.env.NEXT_PUBLIC_STREAM_API_KEY}.livestream.${webinar.id}`}
-        streamKey={userToken}
+          open={obsDialogBox}
+          onOpenChange={setObsDialogBox}
+          rtmpURL={`rtmp://ingress.stream-io-video.com:443/${process.env.NEXT_PUBLIC_STREAM_API_KEY}.livestream.${webinar.id}`}
+          streamKey={userToken}
         />
       )}
     </div>

@@ -5,11 +5,9 @@ import FeatureCard from "./_components/FeatureCard";
 import FeatureSectionLayout from "./_components/FeatureSectionLayout";
 import Image from "next/image";
 import { potentialCustomer } from "@/lib/data";
-import UserInfoCard from "./_components/UserInfoCard";
+import UserInfoCard from "./_components/UserInfoCard";   
 
-type Props = {};       
-
-const Pages = (props: Props) => {
+const Pages = () => {
   return (
     <div className="w-full mx-auto h-full">
       <div

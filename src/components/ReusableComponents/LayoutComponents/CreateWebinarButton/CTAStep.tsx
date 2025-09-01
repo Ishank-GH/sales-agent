@@ -1,16 +1,25 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CtaTypeEnum } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 import { useWebinarStore } from "@/store/useWebinarStore";
-import { X } from "lucide-react";
+import { Assistant } from "@vapi-ai/server-sdk/api";
+import { Search, X } from "lucide-react";
 import React, { useState } from "react";
 
-type Props = {};
+type Props = {
+  assistants: Assistant[] | [];
+};
 
-const CTAStep = (props: Props) => {
- 
+const CTAStep = ({ assistants }: Props) => {
   const {
     formData,
     updateCTAField,
@@ -19,10 +28,11 @@ const CTAStep = (props: Props) => {
     getStepValidationErrors,
   } = useWebinarStore();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { ctaLabel, tags, aiAgent, priceId, ctaType } = formData.cta;
-   React.useEffect(() => {
+  React.useEffect(() => {
     if (!ctaType) {
-      updateCTAField('ctaType', CtaTypeEnum.BOOK_A_CALL);
+      updateCTAField("ctaType", CtaTypeEnum.BOOK_A_CALL);
     }
   }, [ctaType, updateCTAField]);
   const [tagInput, setTagInput] = useState("");
@@ -41,7 +51,11 @@ const CTAStep = (props: Props) => {
   };
 
   const handleSelectCTAType = (value: string) => {
-    updateCTAField('ctaType', value as CtaTypeEnum)
+    updateCTAField("ctaType", value as CtaTypeEnum);
+  };
+
+  const handleSelectAgent = (value: string) => {
+    updateCTAField('aiAgent', value)
   }
 
   return (
@@ -54,8 +68,8 @@ const CTAStep = (props: Props) => {
           CTA Label <span className="text-red-400">*</span>
         </Label>
         <Input
-            id="ctaLabel"
-            name="ctaLabel"
+          id="ctaLabel"
+          name="ctaLabel"
           value={ctaLabel || ""}
           onChange={handleChange}
           placeholder="Let's Get Started"
@@ -122,6 +136,44 @@ const CTAStep = (props: Props) => {
           </TabsList>
         </Tabs>
       </div>
+      {ctaType === CtaTypeEnum.BOOK_A_CALL && (
+        <div className="space-y-2">
+          <Label>Attach an Ai Agent</Label>
+          <div className="relative">
+            <div className="mb-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                <Input
+                  placeholder="Search agents"
+                  className="pl-9 !bg-background/50 border border-input"
+                />
+              </div>
+            </div>
+            <Select value={aiAgent} onValueChange={handleSelectAgent}>
+              <SelectTrigger className="w-full !bg-background/50 border border-input">
+                <SelectValue placeholder="Select an Agent" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-input max-h-48">
+                {assistants?.length > 0 ? (
+                  assistants.map((assistant) => (
+                    <SelectItem
+                      key={assistant.id}
+                      value={assistant.id}
+                      className="!bg-background/50 hover:!bg-white/10"
+                    >
+                      {assistant.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="No Agent Available" disabled>
+                    No agents available
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

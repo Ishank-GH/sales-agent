@@ -7,7 +7,7 @@ type Props = {
   mainIcon: React.ReactNode;
   leftIcon: React.ReactNode;
   rightIcon: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   placeholder?: string;
 };
 
