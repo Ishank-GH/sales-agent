@@ -28,8 +28,7 @@ const CTAStep = ({ assistants }: Props) => {
     getStepValidationErrors,
   } = useWebinarStore();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { ctaLabel, tags, aiAgent, priceId, ctaType } = formData.cta;
+  const { ctaLabel, tags, aiAgent, ctaType } = formData.cta;
   React.useEffect(() => {
     if (!ctaType) {
       updateCTAField("ctaType", CtaTypeEnum.BOOK_A_CALL);

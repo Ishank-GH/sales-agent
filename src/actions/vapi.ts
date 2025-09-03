@@ -24,6 +24,7 @@ export const getAllAssistants = async () => {
 export const createAssistant = async (name: string) => {
   try {
     const createAssistant = await vapiServer.assistants.create({
+      serverMessages: [],
       name,
       firstMessage: `Hi there, this is ${name} from customer support. How can I help you today?`,
       model: {

@@ -38,7 +38,7 @@ export const createWebinar = async (formData: WebinarFormState) => {
     // }
     const presenterId = user.user.id;
 
-    console.log("Form Data:", formData, presenterId);
+  // formData logged during development; removed to avoid noisy logs in production
 
     if (!formData.basicInfo.webinarName) {
       return { status: 404, message: "Webinar name is required" };
@@ -72,7 +72,7 @@ export const createWebinar = async (formData: WebinarFormState) => {
         ctaLabel: formData.cta.ctaLabel,
         ctaType: formData.cta.ctaType,
         aiAgentId: formData.cta.aiAgent || null,
-        priceId: formData.cta.priceId || null,
+        priceId: null,
         lockChat: formData.additionalInfo.lockChat || false,
         couponCode: formData.additionalInfo.couponEnabled
           ? formData.additionalInfo.couponCode
@@ -81,6 +81,24 @@ export const createWebinar = async (formData: WebinarFormState) => {
         presenterId: presenterId,
       },
     });
+
+    // Automatically add creator as attendee and attendance
+    let attendee = await prismaClient.attendee.findUnique({
+      where: { email: user.user.email },
+    });
+    if (!attendee) {
+      attendee = await prismaClient.attendee.create({
+        data: { email: user.user.email, name: user.user.name },
+      });
+    }
+    await prismaClient.attendance.create({
+      data: {
+        attendedType: "REGISTERED", // Use AttendedTypeEnum.REGISTERED
+        attendeeId: attendee.id,
+        webinarId: webinar.id,
+      },
+    });
+
     revalidatePath("/");
     return {
       status: 200,
@@ -143,7 +161,7 @@ export const getWebinarById = async (webinarId: string) => {
             id: true,
             name: true,
             profileImage: true,
-            stripeConnectId: true,
+            // stripeConnectId: true,
           },
         },
       },

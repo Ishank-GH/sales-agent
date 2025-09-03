@@ -63,18 +63,20 @@ const WaitListComponent = ({
         throw new Error(res.message || "Something went wrong");
       }
 
-      if (res.data?.user) {
+      if (res.data) {
         setAttendee({
-          id: res.data.user.id,
+          id: res.data.attendeeId,
           name: res.data.user.name,
           email: res.data.user.email,
-          callStatus: "PENDING",
+          callStatus: res.data.user.callStatus || "PENDING",
           createdAt: res.data.user.createdAt
             ? new Date(res.data.user.createdAt)
             : new Date(),
           updatedAt: res.data.user.updatedAt
             ? new Date(res.data.user.updatedAt)
             : new Date(),
+          attendanceId: res.data.id,
+          attendeeId: res.data.attendeeId,
         });
       }
 
@@ -97,7 +99,6 @@ const WaitListComponent = ({
         if (onRegistered) onRegistered();
       }, 1500);
     } catch (error) {
-      console.error("Error submitting waitlist form:", error);
       toast.error(
         error instanceof Error ? error.message : "Something went wrong"
       );

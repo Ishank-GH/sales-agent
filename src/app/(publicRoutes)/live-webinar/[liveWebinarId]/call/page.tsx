@@ -1,4 +1,4 @@
-import { getAttendeeById } from "@/actions/attendance";
+import { getAttendeeById, getOrCreateAttendeeForWebinar } from "@/actions/attendance";
 import { getWebinarById } from "@/actions/webinar";
 import { CallStatusEnum, WebinarStatusEnum } from "@/generated/prisma";
 import { WebinarWithPresenter } from "@/lib/type";
@@ -15,13 +15,33 @@ const page = async ({ params, searchParams }: Props) => {
   const { liveWebinarId } = await params;
   const { attendeeId } = await searchParams;
 
-  if (!liveWebinarId || !attendeeId) {
+  if (!liveWebinarId) {
     redirect("/404");
   }
-  const attendee = await getAttendeeById(attendeeId, liveWebinarId);
 
-  if (!attendee.data) {
-    redirect(`/live-webinar/${liveWebinarId}?error=attendee-not-found`);
+  let attendance;
+
+  // If attendeeId supplied, try to fetch; otherwise attempt to get or create one
+  if (attendeeId) {
+    attendance = await getAttendeeById(attendeeId, liveWebinarId);
+  }
+
+  if (!attendance || !attendance.data) {
+    // Try to create or get a guest attendee for this webinar
+    const created = await getOrCreateAttendeeForWebinar(liveWebinarId, {});
+    if (!created || !created.data) {
+      redirect(`/live-webinar/${liveWebinarId}?error=attendee-not-found`);
+    }
+
+    // Redirect to same page with attendeeId set so client components can use it
+    const newAttendeeId = created.data.attendeeId || created.data.user?.id || created.data.user?.id || created.data.user?.id;
+    if (!newAttendeeId) {
+      redirect(`/live-webinar/${liveWebinarId}?error=attendee-not-found`);
+    }
+
+    return redirect(
+      `/live-webinar/${liveWebinarId}/call?attendeeId=${newAttendeeId}`
+    );
   }
 
   const webinar = await getWebinarById(liveWebinarId);
@@ -34,27 +54,25 @@ const page = async ({ params, searchParams }: Props) => {
   ) {
     redirect(`/live-webinar/${liveWebinarId}?error=webinar-not-started`);
   }
-
   if (
     webinar.ctaType !== "BOOK_A_CALL" ||
-    !webinar.aiAgentId ||
-    !webinar.priceId
+    !webinar.aiAgentId
   ) {
     redirect(`/live-webinar/${liveWebinarId}?error=cannot-book-a-call`);
   }
 
-if(attendee.data.callStatus === CallStatusEnum.COMPLETED){
-       redirect(`/live-webinar/${liveWebinarId}?error=call-not-pending`); 
-}
+  if (attendance.data && attendance.data.user.callStatus === CallStatusEnum.COMPLETED) {
+    redirect(`/live-webinar/${liveWebinarId}?error=call-not-pending`);
+  }
 
-  return (
+  return(
     <AutoConnectCall
-userName={attendee.data.name}
-assistantId={webinar.aiAgentId}
-webinar={webinar as WebinarWithPresenter}
-userId={attendeeId}
-/>
-  )
+      userName={attendance.data.user.name}
+      assistantId={webinar.aiAgentId}
+      webinar={webinar as WebinarWithPresenter}
+      userId={attendeeId}
+    />
+  );
 };
 
 export default page;

@@ -53,12 +53,9 @@ const LiveWebinarView = ({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleCTAButtonClick = async () => {
-    if (!channel) return;
-    console.log("CTA button clicked", channel);
-    await channel.sendEvent({
-      type: "open_cta_dialog",
-    });
+    const handleCTAButtonClick = async () => {
+    console.log("CTA button clicked - opening dialog directly");
+    setDialogOpen(true);
   };
 
   const handleEndStream = async () => {
@@ -83,25 +80,32 @@ const LiveWebinarView = ({
   };
 
   useEffect(() => {
+    // Only initialize chat if userToken is available
+    if (!userToken) return;
+
     const initChat = async () => {
-      const client = StreamChat.getInstance(
-        process.env.NEXT_PUBLIC_STREAM_API_KEY!
-      );
+      try {
+        const client = StreamChat.getInstance(
+          process.env.NEXT_PUBLIC_STREAM_API_KEY!
+        );
 
-      await client.connectUser(
-        {
-          id: userId,
-          name: username,
-        },
-        userToken
-      );
-      const channel = client.channel("livestream", webinar.id, {
-        // name: webinar.title,
-      });
-      await channel.watch();
+        await client.connectUser(
+          {
+            id: userId,
+            name: username,
+          },
+          userToken
+        );
+        const channel = client.channel("livestream", webinar.id, {
+          // name: webinar.title,
+        });
+        await channel.watch();
 
-      setChatClient(client);
-      setChannel(channel);
+        setChatClient(client);
+        setChannel(channel);
+      } catch (error) {
+        console.error("Error initializing chat:", error);
+      }
     };
     initChat();
 
@@ -110,7 +114,8 @@ const LiveWebinarView = ({
         chatClient.disconnectUser();
       }
     };
-  }, [userId, username, userToken, webinar.id, webinar.title, chatClient]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, username, userToken, webinar.id, webinar.title]);
 
   useEffect(() => {
     if (chatClient && channel) {
@@ -193,7 +198,7 @@ const LiveWebinarView = ({
               </div>
             </div>
 
-            {isHost && (
+            {isHost ? (
               <div className="flex items-center space-x-1">
                 <Button
                   onClick={() => setObsDialogBox(true)}
@@ -225,10 +230,17 @@ const LiveWebinarView = ({
                 </Button>
                 <Button onClick={handleCTAButtonClick}>
                   {webinar.ctaType === CtaTypeEnum.BOOK_A_CALL
-                    ? "Book a Call"
+                    ? "Talk with Agent"
                     : "Buy Now"}
                 </Button>
               </div>
+            ) : (
+              // Show CTA button for attendees when webinar has BOOK_A_CALL CTA type
+              webinar.ctaType === CtaTypeEnum.BOOK_A_CALL && (
+                <Button onClick={handleCTAButtonClick}>
+                  Talk with Agent
+                </Button>
+              )
             )}
           </div>
         </div>

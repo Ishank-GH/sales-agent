@@ -1,10 +1,28 @@
-import { Attendee } from "@/generated/prisma";
+// ...existing code...
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 type AttendeeStore = {
-  attendee: Attendee | null;
-  setAttendee: (attendee: Attendee) => void;
+  attendee: {
+    id: string;
+    name: string;
+    email: string;
+    callStatus: string;
+    createdAt: Date;
+    updatedAt: Date;
+    attendanceId?: string;
+    attendeeId?: string;
+  } | null;
+  setAttendee: (attendee: {
+    id: string;
+    name: string;
+    email: string;
+    callStatus: string;
+    createdAt: Date;
+    updatedAt: Date;
+    attendanceId?: string;
+    attendeeId?: string;
+  }) => void;
   clearAttendee: () => void;
 };
 // Create the Zustand stare with persistence

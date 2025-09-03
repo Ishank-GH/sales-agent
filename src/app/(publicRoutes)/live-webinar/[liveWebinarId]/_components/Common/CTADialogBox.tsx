@@ -12,6 +12,7 @@ import { WebinarWithPresenter } from "@/lib/type";
 import { ChevronRight, Loader2, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useAttendeeStore } from "@/store/useAttendeeStore";
 import { toast } from "sonner";
 
 type Props = {
@@ -31,29 +32,26 @@ const CTADialogBox = ({
 }: Props) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { attendee } = useAttendeeStore();
 
   const handleClick = async() => {
     try {
+      const attendeeId = attendee?.attendeeId || userId;
       if (webinar?.ctaType === "BOOK_A_CALL") {
-        router.push(`/live-webinar/${webinar.id}/call?attendeeId=${userId}`);
+        router.push(`/live-webinar/${webinar.id}/call?attendeeId=${attendeeId}`);
       } else {
-        // if (!webinar.priceId || !webinar.presenter.stripeConnectId) {
-        //   return toast.error("No priceId or stripeConnectId found");
-        // }
-         const session = {
-        url: `/live-webinar/${webinar.id}/success?attendeeId=${userId}`,
-      };
-          if (session.url) {
-        toast.success("Access granted! Redirecting...");
-        router.push(session.url);
-      }
+        const session = {
+          url: `/live-webinar/${webinar.id}/success?attendeeId=${attendeeId}`,
+        };
+        if (session.url) {
+          toast.success("Access granted! Redirecting...");
+          router.push(session.url);
+        }
       }
     } catch (error) {
       console.error(error);
-      
-    }
-    finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 

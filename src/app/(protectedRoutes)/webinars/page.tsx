@@ -32,7 +32,10 @@ const page = async ({searchParams}: Props) => {
         heading="The home to all your webinars"
         placeholder="Search option ... "
       >
-        <TabsList className="bg-transparent space-x-3">
+        
+      </PageHeader>
+
+      <TabsList className="bg-transparent  space-x-3">
           <TabsTrigger
             value="all"
             className="bg-secondary opacity-50 data-[state=active]:opacity-100 px-8 py-4"
@@ -46,7 +49,6 @@ const page = async ({searchParams}: Props) => {
             <Link href="/webinars?webinarStatus=ended">Ended</Link>
           </TabsTrigger>
         </TabsList>
-      </PageHeader>
 
 {/* Implement upcoming and ended tabs */} 
       <TabsContent

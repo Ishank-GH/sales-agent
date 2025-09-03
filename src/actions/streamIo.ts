@@ -62,6 +62,9 @@ export const getTokenForHost = async (
 
 export const createAndStartStream = async (webinar: Webinar) => {
   try {
+    if (!webinar.presenterId) {
+      throw new Error("Webinar presenterId is missing");
+    }
     const checkWebinar = await prismaClient.webinar.findMany({
       where: {
         presenterId: webinar.presenterId,
@@ -75,7 +78,6 @@ export const createAndStartStream = async (webinar: Webinar) => {
     const call = getStreamClient.video.call("livestream", webinar.id);
     await call.getOrCreate({
       data: {
-        //starts_at: new Date(webinar.startTime)
         created_by_id: webinar.presenterId,
         members: [
           {
@@ -86,10 +88,10 @@ export const createAndStartStream = async (webinar: Webinar) => {
       },
     });
 
-    call.goLive();
-    console.log("Stream created and started successfully");
+    await call.goLive();
+    console.log("Stream created and started successfully for webinar:", webinar.id, "presenter:", webinar.presenterId);
   } catch (error) {
-    console.error("Error creating and starting stream", error);
+    console.error("Error creating and starting stream", error, webinar);
     throw new Error("Failed to create and start stream");
   }
 };

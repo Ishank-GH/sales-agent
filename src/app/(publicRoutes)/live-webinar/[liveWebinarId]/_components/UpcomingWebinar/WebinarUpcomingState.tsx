@@ -57,7 +57,7 @@ const WebinarUpcomingState = ({ webinar, currentUser }: Props) => {
       <div className="space-y-6 w-full h-full flex justify-center items-center flex-col">
         <div className="w-full max-w-md aspect-[4/3] relative rounded-4xl overflow-hidden mb-6">
           <Image
-            src={"/darkthumbnail.png"}
+            src={"/webinar.png"}
             alt={webinar.title}
             fill
             className="object-cover"

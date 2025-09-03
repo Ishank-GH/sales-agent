@@ -1,11 +1,11 @@
 import { onAuthenticateUser } from "@/actions/auth";
 import {
-  Coins,
-  LucideAlertCircle,
-  LucideArrowRight,
-  LucideCheckCircle2,
+  Settings as SettingsIcon,
+  User,
+  Bell,
+  Shield,
+  Palette,
 } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -14,99 +14,170 @@ const page = async () => {
   if (!userExist.user) {
     redirect("/sign-in");
   }
-  const isConnected = !!userExist?.user?.stripeConnectId;
-
-  // const stripeLink = getStripeOAuthLink(
-  //   "api/stripe-connect",
-  //   userExist.user.id
-  // )
 
   return (
-    <div className="w-full mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-6">Payment Integration</h1>
-      <div className="w-full p-6 border border-input rounded-lg bg-background shadow-sm">
-        <div className="flex items-center mb-4">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 [to-indigo-600 flex items-center justify-center mr-4">
-            <Coins />
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold text-primary">
-              Stripe Connect
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Connect your Stripe account to start accepting payments
-            </p>
-          </div>
-        </div>
-        <div className="my-6 p-4 bg-muted rounded-md">
-          <div className="flex items-start">
-            {isConnected ? (
-              <LucideCheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
-            ) : (
-              <LucideAlertCircle className="h-5 w-5 text-amber-500 mt-0.5 mr-3 flex-shrink-0" />
-            )}
-
+    <div className="w-full mx-auto py-8 px-4 max-w-4xl">
+      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      
+      <div className="space-y-6">
+        {/* Profile Settings */}
+        <div className="w-full p-6 border border-input rounded-lg bg-background shadow-sm">
+          <div className="flex items-center mb-4">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center mr-4">
+              <User />
+            </div>
             <div>
-              <p className="font-medium">
-                {isConnected
-                  ? "Your Stripe account is connected"
-                  : "Your Stripe account is not connected yet"}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {isConnected
-                  ? "You can now accept payments through your application"
-                  : "Connect your Stripe account to start processing payments and managing subscriptions"}
+              <h2 className="text-xl font-semibold text-primary">
+                Profile Settings
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Manage your profile information and preferences
               </p>
             </div>
           </div>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-muted-foreground">
-            {isConnected
-              ? "You can reconnect anytime if needed"
-              : "You'll be redirected to Stripe to complete the connection"}
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Name</label>
+              <p className="text-muted-foreground">{userExist.user.name}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Email</label>
+              <p className="text-muted-foreground">{userExist.user.email}</p>
+            </div>
           </div>
-          {/* TODO: Add the stripe Link */}
-          <Link
-            href={''}
-            className={`px-5 py-2.5 rounded-md font-medium text-sm flex items-center gap-2 transition-colors ${
-              isConnected
-                ? "bg-muted hover:bg-muted/80 text-foreground"
-                : "bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-purple-700  hover:to-indigo-700 text-white"
-            }`}
-          >
-            {isConnected ? "Reconnect" : "Connect with Stripe"}
-            <LucideArrowRight size={16} />
-          </Link>
         </div>
-        {!isConnected && (
-          <div className="mt-6 pt-6 border-t border-border">
-            <h3 className="text-sm font-medium mb-2">
-              Why connect with Stripe?
-            </h3>
-            <ul className="text-sm text-muted-foreground space-y-2">
-              <li className="flex items-center gap-2">
-                <div className="h-4 w-4 rounded-full flex items-center bg-green-100 justify-center">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-                </div>
-                Process payments securely from customers worldwide
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="h-4 w-4 rounded-full bg-green-100 flex items-center justify-center">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-                </div>
-                Manage subscriptions and recurring billing
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="h-4 w-4 rounded-full bg-green-100 flex items-center justify-center">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-                </div>
-                Access detailed financial reporting and analytics
-              </li>
-            </ul>
+
+        {/* Webinar Preferences */}
+        <div className="w-full p-6 border border-input rounded-lg bg-background shadow-sm">
+          <div className="flex items-center mb-4">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center mr-4">
+              <SettingsIcon />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-primary">
+                Webinar Preferences
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Configure your webinar settings and defaults
+              </p>
+            </div>
           </div>
-        )}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Default Webinar Duration</label>
+                <p className="text-muted-foreground text-xs">Set default duration for new webinars</p>
+              </div>
+              <span className="text-sm text-muted-foreground">60 minutes</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Auto-start Recording</label>
+                <p className="text-muted-foreground text-xs">Automatically start recording when webinar begins</p>
+              </div>
+              <span className="text-sm text-muted-foreground">Disabled</span>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Agent Settings */}
+        <div className="w-full p-6 border border-input rounded-lg bg-background shadow-sm">
+          <div className="flex items-center mb-4">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center mr-4">
+              <Shield />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-primary">
+                AI Agent Settings
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Configure your AI agent behavior and responses
+              </p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Call Duration Limit</label>
+                <p className="text-muted-foreground text-xs">Maximum duration for AI agent calls</p>
+              </div>
+              <span className="text-sm text-muted-foreground">3 minutes</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Voice Settings</label>
+                <p className="text-muted-foreground text-xs">Configure voice preferences for AI agent</p>
+              </div>
+              <span className="text-sm text-muted-foreground">Default</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Notification Settings */}
+        <div className="w-full p-6 border border-input rounded-lg bg-background shadow-sm">
+          <div className="flex items-center mb-4">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center mr-4">
+              <Bell />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-primary">
+                Notifications
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Manage your notification preferences
+              </p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Webinar Reminders</label>
+                <p className="text-muted-foreground text-xs">Get notified before your webinars start</p>
+              </div>
+              <span className="text-sm text-muted-foreground">Enabled</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Attendee Registrations</label>
+                <p className="text-muted-foreground text-xs">Notifications for new attendee registrations</p>
+              </div>
+              <span className="text-sm text-muted-foreground">Enabled</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Appearance Settings */}
+        <div className="w-full p-6 border border-input rounded-lg bg-background shadow-sm">
+          <div className="flex items-center mb-4">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center mr-4">
+              <Palette />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-primary">
+                Appearance
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Customize the look and feel of your webinars
+              </p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Theme</label>
+                <p className="text-muted-foreground text-xs">Choose your preferred theme</p>
+              </div>
+              <span className="text-sm text-muted-foreground">System</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium">Language</label>
+                <p className="text-muted-foreground text-xs">Select your preferred language</p>
+              </div>
+              <span className="text-sm text-muted-foreground">English</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

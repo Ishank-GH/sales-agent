@@ -12,6 +12,7 @@ import {
 import { AlertCircle, Loader2, WifiOff } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import LiveWebinarView from "../Common/LiveWebinarView";
+import { Attendee } from "@/generated/prisma";
 
 type Props = {
   apiKey: string;
@@ -45,7 +46,7 @@ const Participant = ({ apiKey, callId, webinar }: Props) => {
             attendee?.name || "Guest"
           }`,
         };
-        const userToken = await getStreamIoToken(attendee);
+        const userToken = await getStreamIoToken(attendee as Attendee);
         setToken(userToken);
 
         const streamClient = new StreamVideoClient({

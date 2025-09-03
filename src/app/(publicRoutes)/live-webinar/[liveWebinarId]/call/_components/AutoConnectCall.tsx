@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi/vapiClient";
 import { Bot, Clock, Loader2, Mic, MicOff, PhoneOff } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 const CallStatus = {
@@ -30,12 +31,13 @@ const AutoConnectCall = ({
   assistantId,
   assistantName = "AI Assistant",
   callTimeLimit = 180,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   webinar,
 }: Props) => {
   const [callStatus, setCallStatus] = useState(CallStatus.CONNECTING);
+  const callStatusRef = useRef(callStatus);
   const [assistantIsSpeaking, setAssistantIsSpeaking] = useState(false);
   const [userIsSpeaking, setUserIsSpeaking] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isMicMuted, setIsMicMuted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(callTimeLimit);
 
@@ -46,7 +48,7 @@ const AutoConnectCall = ({
   });
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 50);
+    const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs
       .toString()
@@ -116,6 +118,8 @@ const AutoConnectCall = ({
     }
   };
 
+  const router = useRouter();
+
   const stopCall = async () => {
     try {
       vapi.stop();
@@ -126,6 +130,13 @@ const AutoConnectCall = ({
         throw new Error("Failed to update call status");
       }
       toast.success("Call ended successfully");
+      // navigate back to webinar after ending
+      try {
+        const wid = (webinar as unknown as { id?: string })?.id;
+        if (wid) router.push(`/live-webinar/${wid}`);
+      } catch (e) {
+        console.warn("Navigation after stop failed", e);
+      }
     } catch (error) {
       console.error("Failed to stop call:", error);
       toast.error("Failed to stop call. Please try again.");
@@ -146,13 +157,18 @@ const AutoConnectCall = ({
       setCallStatus(CallStatus.CONNECTING);
       await vapi.start(assistantId);
       const res = await changeCallStatus(userId, CallStatusEnum.InProgress);
-      if (!res.success) {
-        throw new Error("Failed to update call status");
-      }
+      if (!res.success) throw new Error("Failed to update call status");
       toast.success("Call started successfully");
     } catch (error) {
       console.error("Failed to start call:", error);
-      toast.error("Failed to start call. Please try again.");
+      try {
+        await vapi.stop();
+      } catch (e) {
+        console.warn("vapi.stop during start cleanup failed", e);
+      }
+      const msg = error instanceof Error ? error.message : String(error);
+      setErrorMessage(msg || "Failed to start call");
+      toast.error("Failed to start call. " + (msg || "Please try again."));
       setCallStatus(CallStatus.FINISHED);
     }
   };
@@ -171,8 +187,9 @@ const AutoConnectCall = ({
   
 
   useEffect(() => {
+  // keep ref in sync so event handlers use latest value
+  callStatusRef.current = callStatus;
     const onCallStart = async () => {
-      console.log("Call started");
       setCallStatus(CallStatus.ACTIVE);
       setupAudio();
 
@@ -190,9 +207,15 @@ const AutoConnectCall = ({
       }, 1000);
     };
     const onCallEnd = () => {
-      console.log("Call ended");
       setCallStatus(CallStatus.FINISHED);
       cleanup();
+      // navigate back to the webinar page when call ends
+      try {
+        const wid = (webinar as unknown as { id?: string })?.id;
+        if (wid) router.push(`/live-webinar/${wid}`);
+      } catch (err) {
+        console.warn("Failed to navigate after call end:", err);
+      }
     };
 
     const onSpeechStart = () => {
@@ -200,13 +223,19 @@ const AutoConnectCall = ({
     };
 
     const onSpeechEnd = () => {
-      setAssistantIsSpeaking(true);
+      setAssistantIsSpeaking(false);
     };
 
-    const onError = (error: Error) => {
+    const onError = (error: unknown) => {
       console.error("Vapi error:", error);
-      setCallStatus(CallStatus.FINISHED);
-      cleanup();
+      const msg = error instanceof Error ? error.message : String(error);
+      setErrorMessage(msg || "An error occurred");
+
+      // If we were already ACTIVE, mark finished; if still CONNECTING, allow retry instead of immediate finish
+      if (callStatusRef.current === CallStatus.ACTIVE) {
+        setCallStatus(CallStatus.FINISHED);
+        cleanup();
+      }
     };
 
     vapi.on("call-start", onCallStart);
@@ -340,6 +369,36 @@ const AutoConnectCall = ({
           <div className="absolute inset-0 bg-background/80 flex items-center justify-center flex-col gap-4 z-20">
             <Loader2 className="h-10 w-10 animate-spin text-accent-primary" />
             <h3 className="text-xl font-medium">Connecting ...</h3>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="absolute inset-0 bg-background/90 flex items-center justify-center z-30">
+            <div className="bg-card p-6 rounded-lg border border-border text-center max-w-md">
+              <h3 className="text-lg font-semibold mb-2">Connection Error</h3>
+              <p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
+              <div className="flex justify-center gap-3">
+                <button
+                  className="px-4 py-2 rounded bg-secondary text-foreground"
+                  onClick={() => {
+                    setErrorMessage(null);
+                    setCallStatus(CallStatus.CONNECTING);
+                    startCall();
+                  }}
+                >
+                  Retry
+                </button>
+                <button
+                  className="px-4 py-2 rounded bg-destructive text-primary"
+                  onClick={() => {
+                    setErrorMessage(null);
+                    stopCall();
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
