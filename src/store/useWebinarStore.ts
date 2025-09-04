@@ -14,6 +14,7 @@ export type WebinarFormState = {
     date?: Date;
     time?: string;
     timeFormat?: "AM" | "PM";
+    dateTimeISO?: string;
   };
   cta: {
     ctaLabel?: string;

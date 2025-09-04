@@ -58,7 +58,41 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
     if (isLastStep) {
       try {
         setSubmitting(true);
-        const result = await createWebinar(formData);
+        const { date, time, timeFormat } = formData.basicInfo;
+
+        // This ensures 'date' and 'time' are defined before we use them.
+        if (!date || !time) {
+          toast.error("Date or time is missing. Please complete the form.");
+          setValidationError("Date or time is missing. Please go back.");
+          setSubmitting(false);
+          return;
+        }
+
+        const [hoursStr, minutesStr] = time.split(":");
+        let hours = parseInt(hoursStr, 10);
+        const minutes = parseInt(minutesStr || "0", 10);
+
+        if (timeFormat === "PM" && hours < 12) {
+          hours += 12;
+        } else if (timeFormat === "AM" && hours === 12) {
+          hours = 0;
+        }
+
+        const localDate = new Date(date);
+        localDate.setHours(hours, minutes, 0, 0);
+
+        const isoString = localDate.toISOString();
+
+        const updatedFormData = {
+          ...formData,
+          basicInfo: {
+            ...formData.basicInfo,
+            dateTimeISO: isoString,
+          },
+        };
+        // Call the server action with the CORRECTED data
+        const result = await createWebinar(updatedFormData);
+
         if (result.status === 200 && result.webinarId) {
           toast.success("Your webinar has been created successfully.");
           onComplete(result.webinarId);

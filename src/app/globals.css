@@ -250,3 +250,52 @@
 .str-chat__channel{
   justify-content: space-between !important;
 }
+
+/* 1. Define classes to apply our new fonts safely */
+.font-heading {
+  font-family: var(--font-manrope), sans-serif;
+}
+.font-body {
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* 2. Define the animation keyframes */
+@keyframes gradient-animation {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3. Create utility classes for the animations */
+@layer utilities {
+  .animate-gradient-text {
+    background-size: 200%;
+    animation: gradient-animation 5s ease infinite;
+  }
+
+  /* This ensures elements start hidden before animating */
+  .animate-fade-in-up {
+    opacity: 0; 
+    animation: fade-in-up 0.8s ease-out forwards;
+  }
+  
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+  .animation-delay-700 {
+    animation-delay: 700ms;
+  }
+}

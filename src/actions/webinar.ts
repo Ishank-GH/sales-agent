@@ -6,68 +6,40 @@ import { prismaClient } from "@/lib/prismaClient";
 import { revalidatePath } from "next/cache";
 import { WebinarStatusEnum } from "@/generated/prisma";
 
-function combineDateTime(
-  date: Date,
-  timeStr: string,
-  timeFormat: "AM" | "PM"
-): Date {
-  const [hoursStr, minutesStr] = timeStr.split(":");
-  let hours = Number.parseInt(hoursStr, 10);
-  const minutes = Number.parseInt(minutesStr || "0", 10);
-
-  // Convert to 24-hour format
-  if (timeFormat === "PM" && hours < 12) {
-    hours += 12;
-  } else if (timeFormat === "AM" && hours === 12) {
-    hours = 0;
-  }
-  const result = new Date(date);
-  result.setHours(hours, minutes, 0, 0);
-  return result;
-}
-
 export const createWebinar = async (formData: WebinarFormState) => {
   try {
     const user = await onAuthenticateUser();
     if (!user.user) {
       return { status: 401, message: "Unauthorized" };
     }
-    // TODO: Check if user has a subscription
-    // if (!user. user. subscription) {
-    // return { status: 402, message: 'Subscription required' }
-    // }
-    const presenterId = user.user.id;
 
-  // formData logged during development; removed to avoid noisy logs in production
+    const presenterId = user.user.id;
 
     if (!formData.basicInfo.webinarName) {
       return { status: 404, message: "Webinar name is required" };
     }
-    if (!formData.basicInfo.date) {
-      return { status: 404, message: "Webinar date is required" };
-    }
-    if (!formData.basicInfo.time) {
-      return { status: 404, message: "Webinar time is required" };
+
+    // CHANGED: We now expect a single dateTimeISO string from the client.
+    if (!formData.basicInfo.dateTimeISO) {
+      return { status: 404, message: "Webinar date and time are required" };
     }
 
-    const combinedDateTime = combineDateTime(
-      formData.basicInfo.date,
-      formData.basicInfo.time,
-      formData.basicInfo.timeFormat || "AM"
-    );
-    const now = new Date();
-
+    // CHANGED: Create a Date object directly from the universal ISO string.
+    const combinedDateTime = new Date(formData.basicInfo.dateTimeISO);
+    const now = new Date(); // The current time on the server (in UTC).
+    
     if (combinedDateTime < now) {
       return {
         status: 400,
         message: "Webinar date and time cannot be in the past",
       };
     }
+
     const webinar = await prismaClient.webinar.create({
       data: {
         title: formData.basicInfo.webinarName,
         description: formData.basicInfo.description || "",
-        startTime: combinedDateTime,
+        startTime: combinedDateTime, // This is now a correct UTC-aware date.
         tags: formData.cta.tags || [],
         ctaLabel: formData.cta.ctaLabel,
         ctaType: formData.cta.ctaType,
@@ -93,7 +65,7 @@ export const createWebinar = async (formData: WebinarFormState) => {
     }
     await prismaClient.attendance.create({
       data: {
-        attendedType: "REGISTERED", // Use AttendedTypeEnum.REGISTERED
+        attendedType: "REGISTERED",
         attendeeId: attendee.id,
         webinarId: webinar.id,
       },
@@ -161,7 +133,6 @@ export const getWebinarById = async (webinarId: string) => {
             id: true,
             name: true,
             profileImage: true,
-            // stripeConnectId: true,
           },
         },
       },
